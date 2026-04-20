@@ -1,16 +1,18 @@
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Rendering;
+using UnityEngine.SceneManagement;
 public class PlayerMovement : MonoBehaviour
 {
-    public float speed = 5f;
-    public  CoinManager cm ;
+    private float speed = 5f;
+    private  CoinManager cm ;
 
-    public Rigidbody2D rb;
-    public float _jumpForce = 100f;
+    private Rigidbody2D rb;
+    private float _jumpForce = 100f;
 
     void Start()
     {
+        //inroepen van player.follow class die ervoor zorgt dat speler gevolgd wordt.
         playerfollow followplayer = FindAnyObjectByType<playerfollow>();
 
         rb = transform.GetComponent<Rigidbody2D>();
@@ -19,13 +21,14 @@ public class PlayerMovement : MonoBehaviour
         {
             followplayer.followplayer = this.transform;
         }
-
     }
+   
 
-   public UnityEvent<Vector2> OnplayerinputReceived = new UnityEvent<Vector2>();
+    public UnityEvent<Vector2> OnplayerinputReceived = new UnityEvent<Vector2>();
    
     void Update()
     {
+        //movemnt voor character (W,A,D || space)
         if ((Input.GetKey(KeyCode.A)) || (Input.GetKey(KeyCode.LeftArrow))) 
         {
             OnplayerinputReceived.Invoke(Vector2.left * speed);
@@ -37,19 +40,30 @@ public class PlayerMovement : MonoBehaviour
         }
         if (Input.GetKey(KeyCode.W) || (Input.GetKey(KeyCode.Space)))
         {
-            Debug.Log("jump was pressed;");
-            //rb.linearVelocity = new Vector2(rb.linearVelocity.x, _jumpForce);
-            OnplayerinputReceived.Invoke( Vector2.up * _jumpForce );
+            OnplayerinputReceived.Invoke(Vector2.up * _jumpForce);
         }
-      
+        if (Input.GetKey(KeyCode.Escape))
+        {
+            SceneManager.LoadScene(0);
+        }
     }
+   
 
+    //laat coins verwijderen zodra die in aanraking komt met speler
     public void OnTriggerEnter2D(Collider2D other)
     {
         if (other.gameObject.CompareTag("coin"))
         {
             cm.coinCount++;
             Destroy(other.gameObject);
+
+            
+        }
+
+        // condition to end the game! can be worked upon
+        if (cm.coinCount == 3)
+        {
+            Debug.Log("Game over! You won!");
         }
     }
 }
